@@ -39,7 +39,8 @@ RUN git clone --depth 1 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.
     && pip install --no-cache-dir --break-system-packages -r ComfyUI-VideoHelperSuite/requirements.txt
 
 # RunPod SDK + helper worker deps
-RUN pip install --no-cache-dir --break-system-packages runpod requests websocket-client pillow
+RUN python3 -m pip install --no-cache-dir --break-system-packages --ignore-installed \
+    runpod "huggingface_hub[cli]" 
 
 # Hugging Face CLI (provides the `hf download` command used below)
 RUN pip install --no-cache-dir --break-system-packages -U "huggingface_hub[cli]"
