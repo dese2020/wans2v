@@ -179,12 +179,18 @@ def _wait_for_completion(prompt_id, timeout_s=1800, poll_s=2):
 def _extract_video_path(history_entry):
     outputs = history_entry.get("outputs", {})
     for node_id, node_output in outputs.items():
-        for key in ("videos", "gifs"):
+        for key in ("videos", "gifs", "images"):
             if key in node_output:
                 for item in node_output[key]:
-                    subfolder = item.get("subfolder", "")
                     filename = item["filename"]
-                    return os.path.join(COMFY_OUTPUT_DIR, subfolder, filename)
+                    # Only treat this as a video if it looks like one; "images"
+                    # is shared with SaveImage-type nodes, but SaveVideo also
+                    # reports its output there (with "animated": [True]).
+                    if key != "images" or node_output.get("animated") or filename.lower().endswith(
+                        (".mp4", ".webm", ".mov", ".mkv", ".avi", ".gif")
+                    ):
+                        subfolder = item.get("subfolder", "")
+                        return os.path.join(COMFY_OUTPUT_DIR, subfolder, filename)
     raise RuntimeError(f"No video output found in history: {history_entry}")
 
 
