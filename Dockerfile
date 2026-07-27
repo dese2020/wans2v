@@ -10,8 +10,9 @@ WORKDIR /workspace
 # System deps (image already ships CUDA/Python/PyTorch; only fill gaps)
 # ---------------------------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git wget curl ffmpeg libgl1 libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+    git wget curl ffmpeg libgl1 libglib2.0-0 python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip
 
 # ---------------------------------------------------------------------------
 # ComfyUI (clone only if the base image doesn't already include it)
@@ -25,7 +26,7 @@ WORKDIR /workspace/ComfyUI
 # Install/refresh Python deps (torch is expected to already be present in this
 # base image, tuned for Blackwell GPUs — do not reinstall it here to avoid
 # clobbering the base image's CUDA-matched build)
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python3 -m pip install --no-cache-dir --break-system-packages -r requirements.txt
 
 # ---------------------------------------------------------------------------
 # Custom nodes needed for Wan2.2 S2V native workflow
@@ -34,13 +35,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /workspace/ComfyUI/custom_nodes
 
 RUN git clone --depth 1 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git \
-    && pip install --no-cache-dir -r ComfyUI-VideoHelperSuite/requirements.txt
+    && python3 -m pip install --no-cache-dir --break-system-packages -r ComfyUI-VideoHelperSuite/requirements.txt
 
 # RunPod SDK + helper worker deps
-RUN pip install --no-cache-dir runpod requests websocket-client pillow
+RUN python3 -m pip install --no-cache-dir --break-system-packages runpod requests websocket-client pillow
 
 # Hugging Face CLI (provides the `hf download` command used below)
-RUN pip install --no-cache-dir -U "huggingface_hub[cli]"
+RUN python3 -m pip install --no-cache-dir --break-system-packages -U "huggingface_hub[cli]"
 
 # ---------------------------------------------------------------------------
 # Model directories
