@@ -27,7 +27,7 @@ WORKDIR /workspace/ComfyUI
 # base image, tuned for Blackwell GPUs — do not reinstall it here to avoid
 # clobbering the base image's CUDA-matched build)
 #RUN python3 -m pip install --no-cache-dir --break-system-packages -r requirements.txt
-pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # ---------------------------------------------------------------------------
 # Custom nodes needed for Wan2.2 S2V native workflow
