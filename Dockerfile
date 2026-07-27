@@ -26,7 +26,8 @@ WORKDIR /workspace/ComfyUI
 # Install/refresh Python deps (torch is expected to already be present in this
 # base image, tuned for Blackwell GPUs — do not reinstall it here to avoid
 # clobbering the base image's CUDA-matched build)
-RUN python3 -m pip install --no-cache-dir --break-system-packages -r requirements.txt
+#RUN python3 -m pip install --no-cache-dir --break-system-packages -r requirements.txt
+pip install --no-cache-dir -r requirements.txt
 
 # ---------------------------------------------------------------------------
 # Custom nodes needed for Wan2.2 S2V native workflow
@@ -35,13 +36,13 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages -r requirement
 WORKDIR /workspace/ComfyUI/custom_nodes
 
 RUN git clone --depth 1 https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git \
-    && python3 -m pip install --no-cache-dir --break-system-packages -r ComfyUI-VideoHelperSuite/requirements.txt
+    && pip install --no-cache-dir --break-system-packages -r ComfyUI-VideoHelperSuite/requirements.txt
 
 # RunPod SDK + helper worker deps
-RUN python3 -m pip install --no-cache-dir --break-system-packages runpod requests websocket-client pillow
+RUN pip install --no-cache-dir --break-system-packages runpod requests websocket-client pillow
 
 # Hugging Face CLI (provides the `hf download` command used below)
-RUN python3 -m pip install --no-cache-dir --break-system-packages -U "huggingface_hub[cli]"
+RUN pip install --no-cache-dir --break-system-packages -U "huggingface_hub[cli]"
 
 # ---------------------------------------------------------------------------
 # Model directories
