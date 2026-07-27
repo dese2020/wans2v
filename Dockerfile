@@ -9,10 +9,10 @@ WORKDIR /workspace
 # ---------------------------------------------------------------------------
 # System deps (image already ships CUDA/Python/PyTorch; only fill gaps)
 # ---------------------------------------------------------------------------
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git wget curl ffmpeg libgl1 libglib2.0-0 python3-pip \
-    && rm -rf /var/lib/apt/lists/* \
-    && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+#    git wget curl ffmpeg libgl1 libglib2.0-0 python3-pip \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && python3 -m pip install --no-cache-dir --break-system-packages --upgrade pip
 
 # ---------------------------------------------------------------------------
 # ComfyUI (clone only if the base image doesn't already include it)
