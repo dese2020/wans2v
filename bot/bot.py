@@ -28,8 +28,9 @@ import base64
 import logging
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Dict, Optional
-
+from dotenv import load_dotenv
 import httpx
 from telegram import Update
 from telegram.constants import ChatAction
@@ -40,7 +41,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-
+load_dotenv()
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
@@ -63,6 +64,22 @@ HEIGHT = int(os.environ.get("RUNPOD_HEIGHT", "640"))
 NUM_EXTENDS = int(os.environ.get("RUNPOD_NUM_EXTENDS", "1"))
 POLL_INTERVAL_S = float(os.environ.get("RUNPOD_POLL_INTERVAL_S", "5"))
 JOB_TIMEOUT_S = float(os.environ.get("RUNPOD_JOB_TIMEOUT_S", "1800"))
+
+# workflow_api.json is expected to live next to this script. It's sent to the
+# RunPod handler as base64 with every job, so the handler doesn't rely on
+# whatever copy is baked into the Docker image.
+WORKFLOW_PATH = Path(__file__).resolve().parent / "workflow_api.json"
+
+
+def _load_workflow_base64() -> str:
+    with open(WORKFLOW_PATH, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+
+# Loaded once at import time; if you edit workflow_api.json you just need to
+# restart the bot process to pick up the change.
+WORKFLOW_BASE64 = _load_workflow_base64()
+logger.info("Loaded workflow_api.json from %s (%d bytes base64)", WORKFLOW_PATH, len(WORKFLOW_BASE64))
 
 
 @dataclass
@@ -163,6 +180,7 @@ async def _run_generation(update: Update, context: ContextTypes.DEFAULT_TYPE, pr
         "width": WIDTH,
         "height": HEIGHT,
         "num_extends": NUM_EXTENDS,
+        "workflow_base64": WORKFLOW_BASE64,
     }
 
     try:

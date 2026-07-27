@@ -159,8 +159,8 @@
     "inputs": {
       "samples": ["201", 0],
       "dim": "t",
-      "start": 0,
-      "length": 1
+      "index": 0,
+      "amount": 1
     }
   },
   "95": {

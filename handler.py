@@ -17,7 +17,11 @@ Expected job input (job["input"]):
   "chunk_length": 77,             # frames per sampling chunk (keep 77, per Wan2.2 S2V default)
   "num_extends": 1,               # 0 = single 77-frame chunk, 1 = one "Video S2V Extend" chunk (this
                                    #  template ships with exactly one extend node baked in)
-  "fps": 16
+  "fps": 16,
+  "workflow_base64": "..."        # optional: base64-encoded workflow_api.json contents. If provided,
+                                   #  this overrides the workflow baked into the Docker image, so the
+                                   #  caller (e.g. the Telegram bot) can ship/update the workflow
+                                   #  without rebuilding the image.
 }
 
 Returns:
@@ -68,7 +72,21 @@ def _save_input_file(data_b64=None, url=None, dst_path=None):
     return dst_path
 
 
-def _load_workflow():
+def _load_workflow(job_input=None):
+    """Load the workflow JSON.
+
+    If job_input contains "workflow_base64", decode and use that instead of
+    the workflow_api.json baked into the image. This lets callers (e.g. the
+    Telegram bot) ship/update the workflow without rebuilding the Docker image.
+    """
+    workflow_b64 = (job_input or {}).get("workflow_base64")
+    if workflow_b64:
+        try:
+            raw = base64.b64decode(workflow_b64)
+            return json.loads(raw.decode("utf-8"))
+        except Exception as exc:  # noqa: BLE001
+            raise ValueError(f"Invalid workflow_base64: {exc}") from exc
+
     with open(WORKFLOW_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -190,7 +208,7 @@ def handler(job):
         dst_path=os.path.join(COMFY_INPUT_DIR, audio_filename),
     )
 
-    wf = _load_workflow()
+    wf = _load_workflow(job_input)
     wf = _patch_workflow(wf, job_input, image_filename, audio_filename)
 
     prompt_id, _ = _queue_prompt(wf)
